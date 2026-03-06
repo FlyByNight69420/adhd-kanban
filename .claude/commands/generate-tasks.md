@@ -1,0 +1,1 @@
+../../skills/generate-tasks/SKILL.md
