@@ -3,6 +3,7 @@ import { readFileSync, existsSync } from "fs";
 import { resolve, dirname, extname, join } from "path";
 import { fileURLToPath } from "url";
 import {
+  getDb,
   initDb,
   getAllProjects,
   getProject,
@@ -55,9 +56,16 @@ function badRequest(res, msg) {
 }
 
 function parseBody(req) {
+  const MAX_BODY = 100 * 1024; // 100KB
   return new Promise((resolve, reject) => {
     let body = "";
-    req.on("data", (chunk) => (body += chunk));
+    req.on("data", (chunk) => {
+      body += chunk;
+      if (body.length > MAX_BODY) {
+        reject(new Error("Body too large"));
+        req.destroy();
+      }
+    });
     req.on("end", () => {
       try {
         resolve(body ? JSON.parse(body) : {});
@@ -264,10 +272,12 @@ async function handleApi(req, res, url) {
     const taskId = Number(parts[1]);
     const task = getTask(taskId);
     if (!task) return notFound(res, "Task not found");
-    if (task.status !== "ready") {
+    const result = getDb()
+      .prepare("UPDATE tasks SET status = 'in_progress' WHERE task_id = ? AND status = 'ready'")
+      .run(taskId);
+    if (result.changes === 0) {
       return json(res, { error: `Task is '${task.status}', not 'ready'. Cannot claim.` }, 409);
     }
-    updateTaskStatus(taskId, "in_progress");
     return json(res, getTask(taskId));
   }
 
@@ -356,7 +366,10 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
 
   // CORS for local dev
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  const origin = req.headers.origin;
+  if (origin && (origin.startsWith("http://localhost") || origin.startsWith("http://127.0.0.1"))) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") {

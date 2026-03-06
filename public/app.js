@@ -125,7 +125,7 @@ function renderCard(task) {
         const r = resolveDep(d);
         const cls = r.done ? "dep-done" : "dep-blocked";
         const icon = r.done ? "\u2705" : "\u26D4";
-        return `<span class="dep-ref ${cls}" title="${esc(r.label)}">${icon} ${d}</span>`;
+        return `<span class="dep-ref ${cls}" title="${esc(r.label)}">${icon} ${esc(d)}</span>`;
       }).join(" ")}</div>`
     : "";
 
@@ -138,8 +138,8 @@ function renderCard(task) {
       </div>
       <div class="card-title">${esc(task.title)}</div>
       <div class="card-tags">
-        <span class="tag tag-priority-${task.priority}">${task.priority}</span>
-        ${task.feature_area ? `<span class="tag tag-area-${task.feature_area}">${task.feature_area}</span>` : ""}
+        <span class="tag tag-priority-${esc(task.priority)}">${esc(task.priority)}</span>
+        ${task.feature_area ? `<span class="tag tag-area-${esc(task.feature_area)}">${esc(task.feature_area)}</span>` : ""}
       </div>
       ${depsHtml}
     </div>
@@ -151,7 +151,7 @@ function updateAreaFilter() {
   const current = sel.value;
   const opts = ['<option value="">All areas</option>'];
   for (const area of [...featureAreas].sort()) {
-    opts.push(`<option value="${area}">${area}</option>`);
+    opts.push(`<option value="${esc(area)}">${esc(area)}</option>`);
   }
   sel.innerHTML = opts.join("");
   if (current && featureAreas.has(current)) sel.value = current;

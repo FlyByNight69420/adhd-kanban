@@ -48,8 +48,7 @@ VALUES
     (1, 'ready', 'in_progress'),
     (1, 'in_progress', 'testing'),
     (1, 'testing', 'review'),
-    (1, 'review', 'done'),
-    (2, 'ready', 'in_progress');
+    (1, 'review', 'done');
 
 -- Phase 1.1 task
 INSERT INTO tasks (project_id, phase_id, title, description, status, feature_area, priority, dependencies, task_file_path)

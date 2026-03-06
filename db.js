@@ -120,9 +120,12 @@ export function updateTaskStatus(taskId, status, commitHash = null) {
 }
 
 export function resetInProgressTasks() {
-  getDb()
+  const result = getDb()
     .prepare("UPDATE tasks SET status = 'ready' WHERE status = 'in_progress'")
     .run();
+  if (result.changes > 0) {
+    console.log(`Reset ${result.changes} stale in_progress task(s) to ready`);
+  }
 }
 
 export function createTask({ projectId, phaseId, title, description, featureArea, priority, dependencies, taskFilePath }) {
@@ -204,7 +207,9 @@ export function getBoardView(phaseId) {
   const tasks = getTasksByPhase(phaseId);
   const columns = { ready: [], in_progress: [], testing: [], review: [], done: [] };
   for (const task of tasks) {
-    columns[task.status].push(task);
+    if (columns[task.status]) {
+      columns[task.status].push(task);
+    }
   }
   return columns;
 }
