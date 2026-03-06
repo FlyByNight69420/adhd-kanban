@@ -1,0 +1,17 @@
+{
+  "name": "adhd-kanban",
+  "version": "1.0.0",
+  "description": "Anti-ADHD Kanban board",
+  "main": "db.js",
+  "type": "module",
+  "scripts": {
+    "db:init": "node -e \"import('./db.js').then(m => { m.initDb(); console.log('Database initialized.'); m.closeDb(); })\"",
+    "db:seed": "node -e \"import('./db.js').then(m => { m.initDb(); m.seedDb(); console.log('Database seeded.'); m.closeDb(); })\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "better-sqlite3": "^12.6.2"
+  }
+}
