@@ -20,27 +20,27 @@ VALUES
     (1, 1, 'Database schema and init script',
      'Create SQLite schema with all tables, indexes, and triggers',
      'done', 'backend', 'critical', NULL,
-     './tasks/mvp/001-database-schema.md'),
+     './projects/anti-adhd-kanban/tasks/mvp/TASK-001-database-schema.md'),
 
     (1, 1, 'REST API - project and phase endpoints',
      'CRUD endpoints for projects and phases',
-     'in_progress', 'backend', 'high', '[1]',
-     './tasks/mvp/002-api-projects-phases.md'),
+     'in_progress', 'backend', 'high', '["TASK-001"]',
+     './projects/anti-adhd-kanban/tasks/mvp/TASK-002-api-projects-phases.md'),
 
     (1, 1, 'REST API - task endpoints',
      'CRUD and status-transition endpoints for tasks',
-     'ready', 'backend', 'high', '[1]',
-     './tasks/mvp/003-api-tasks.md'),
+     'ready', 'backend', 'high', '["TASK-001"]',
+     './projects/anti-adhd-kanban/tasks/mvp/TASK-003-api-tasks.md'),
 
     (1, 1, 'Kanban board UI',
      'Render columns per status, cards per task, drag-and-drop',
-     'ready', 'frontend', 'high', '[2, 3]',
-     './tasks/mvp/004-kanban-ui.md'),
+     'ready', 'frontend', 'high', '["TASK-002", "TASK-003"]',
+     './projects/anti-adhd-kanban/tasks/mvp/TASK-004-kanban-ui.md'),
 
     (1, 1, 'Agent integration hook',
      'Endpoint for Claude Code agents to claim and update tasks',
-     'ready', 'backend', 'medium', '[3]',
-     './tasks/mvp/005-agent-hook.md');
+     'ready', 'backend', 'medium', '["TASK-003"]',
+     './projects/anti-adhd-kanban/tasks/mvp/TASK-005-agent-hook.md');
 
 -- Seed task_history for the tasks that have moved past 'ready'
 INSERT INTO task_history (task_id, old_status, new_status)
@@ -57,7 +57,7 @@ VALUES
     (1, 2, 'Dashboard analytics view',
      'Show velocity, burndown, and task distribution charts',
      'ready', 'frontend', 'medium', NULL,
-     './tasks/1.1/001-dashboard-analytics.md');
+     './projects/anti-adhd-kanban/tasks/1.1/TASK-001-dashboard-analytics.md');
 
 -- Backlog items
 INSERT INTO backlog (project_id, title, notes, status)

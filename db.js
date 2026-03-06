@@ -70,6 +70,10 @@ export function getActivePhase(projectId) {
     .get(projectId);
 }
 
+export function getPhase(phaseId) {
+  return getDb().prepare("SELECT * FROM phases WHERE phase_id = ?").get(phaseId);
+}
+
 export function createPhase({ projectId, phaseName, phaseOrder, status = "locked" }) {
   const result = getDb()
     .prepare(
@@ -101,6 +105,11 @@ export function getTasksByStatus(projectId, status) {
 
 export function getTask(taskId) {
   return getDb().prepare("SELECT * FROM tasks WHERE task_id = ?").get(taskId);
+}
+
+export function getTaskCountByPhase(phaseId) {
+  const row = getDb().prepare("SELECT COUNT(*) as count FROM tasks WHERE phase_id = ?").get(phaseId);
+  return row.count;
 }
 
 export function updateTaskStatus(taskId, status, commitHash = null) {

@@ -5,6 +5,7 @@
   "main": "db.js",
   "type": "module",
   "scripts": {
+    "test": "node --test test/**/*.test.js",
     "db:init": "node -e \"import('./db.js').then(m => { m.initDb(); console.log('Database initialized.'); m.closeDb(); })\"",
     "db:seed": "node -e \"import('./db.js').then(m => { m.initDb(); m.seedDb(); console.log('Database seeded.'); m.closeDb(); })\""
   },
