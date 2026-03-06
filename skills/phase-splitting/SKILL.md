@@ -65,17 +65,15 @@ Ask the user to approve, or provide feedback for revision. **Do not write to the
 
 ### Step 5: Insert into database
 
-On approval, use `createPhase` from `db.js` for each phase:
+On approval, use `db-query.js` to insert each phase:
 
-```javascript
-import { createPhase } from "./db.js";
+```bash
+# MVP is always phase_order 1 with status 'active'
+node db-query.js create_phase <project_id> "MVP" 1 active
 
-// MVP is always phase_order 1 with status 'active'
-createPhase({ projectId, phaseName: "MVP", phaseOrder: 1, status: "active" });
-
-// All subsequent phases start as 'locked'
-createPhase({ projectId, phaseName: "1.1", phaseOrder: 2, status: "locked" });
-createPhase({ projectId, phaseName: "1.2", phaseOrder: 3, status: "locked" });
+# All subsequent phases start as 'locked'
+node db-query.js create_phase <project_id> "1.1" 2 locked
+node db-query.js create_phase <project_id> "1.2" 3 locked
 ```
 
 ### Step 6: Print summary

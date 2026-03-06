@@ -92,6 +92,46 @@ On error:
 { "ok": false, "error": "description of what went wrong" }
 ```
 
+### get_project <project_id>
+
+```bash
+node db-query.js get_project <project_id>
+```
+
+Returns the full project record including name, description, prd_file_path, and timestamps.
+
+### get_phase <phase_id>
+
+```bash
+node db-query.js get_phase <phase_id>
+```
+
+Returns the full phase record including phase_name, phase_order, status, and timestamps.
+
+### create_project <name> <prd_file_path> [description] [deployment_profile]
+
+```bash
+node db-query.js create_project "<name>" "<prd_file_path>" "[description]" "[deployment_profile]"
+```
+
+Creates a new project. Returns the new project_id.
+
+### create_phase <project_id> <phase_name> <phase_order> [status]
+
+```bash
+node db-query.js create_phase <project_id> "<phase_name>" <phase_order> [status]
+```
+
+Creates a new phase. Status defaults to `locked`. Valid statuses: `active`, `locked`, `completed`. Returns the new phase_id.
+
+### create_task <project_id> <phase_id> <title> <priority> <task_file_path> [description] [feature_area] [dependencies_json]
+
+```bash
+node db-query.js create_task <project_id> <phase_id> "<title>" <priority> "<task_file_path>" "[description]" "[feature_area]" '[dependencies_json]'
+```
+
+Creates a new task. Valid priorities: `low`, `medium`, `high`, `critical`. Dependencies must be a JSON array string like `'["TASK-001"]'`. Returns the new task_id.
+
 ## Notes
 
 - Always check `ok` in the response before using `data`

@@ -91,17 +91,7 @@ Generate the PRD following the template below. Every section is mandatory.
 4. Insert project into the database:
 
 ```bash
-node -e "
-import { initDb, createProject, closeDb } from './db.js';
-initDb();
-const id = createProject({
-  name: 'Project Name',
-  description: 'One-liner summary from PRD',
-  prdFilePath: './projects/{project-slug}/PRD.md'
-});
-console.log('Created project with ID:', id);
-closeDb();
-"
+node db-query.js create_project "Project Name" "./projects/{project-slug}/PRD.md" "One-liner summary from PRD"
 ```
 
 ## PRD Template

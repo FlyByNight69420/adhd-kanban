@@ -10,7 +10,9 @@ import {
   createBacklogItem,
   updateBacklogStatus,
   getProject,
+  createProject,
   getPhase,
+  createPhase,
   createTask,
 } from "./db.js";
 
@@ -36,7 +38,7 @@ function requireInt(value, name) {
 const [, , operation, ...args] = process.argv;
 
 if (!operation) {
-  fail("No operation specified. Use: get_task, get_phase_tasks, update_task_status, get_backlog, add_backlog_item, update_backlog_status, get_project, get_phase, create_task");
+  fail("No operation specified. Use: get_task, get_phase_tasks, update_task_status, get_backlog, add_backlog_item, update_backlog_status, get_project, get_phase, create_project, create_phase, create_task");
 }
 
 initDb();
@@ -135,6 +137,33 @@ try {
       break;
     }
 
+    case "create_project": {
+      if (args.length < 2) fail("Usage: create_project <name> <prd_file_path> [description] [deployment_profile]");
+      const name = args[0];
+      const prdFilePath = args[1];
+      const description = args[2] || null;
+      const deploymentProfile = args[3] || null;
+      if (!name.trim()) fail("Name cannot be empty");
+      const id = createProject({ name, description, prdFilePath, deploymentProfile });
+      success({ project_id: Number(id) });
+      break;
+    }
+
+    case "create_phase": {
+      if (args.length < 3) fail("Usage: create_phase <project_id> <phase_name> <phase_order> [status]");
+      const projectId = requireInt(args[0], "project_id");
+      const phaseName = args[1];
+      const phaseOrder = requireInt(args[2], "phase_order");
+      const status = args[3] || "locked";
+      const VALID_PHASE_STATUSES = ["active", "locked", "completed"];
+      if (!VALID_PHASE_STATUSES.includes(status)) {
+        fail(`Invalid status: ${status}. Must be one of: ${VALID_PHASE_STATUSES.join(", ")}`);
+      }
+      const id = createPhase({ projectId, phaseName, phaseOrder, status });
+      success({ phase_id: Number(id) });
+      break;
+    }
+
     case "create_task": {
       if (args.length < 5) fail("Usage: create_task <project_id> <phase_id> <title> <priority> <task_file_path> [description] [feature_area] [dependencies_json]");
       const projectId = requireInt(args[0], "project_id");
@@ -171,7 +200,7 @@ try {
     }
 
     default:
-      fail(`Unknown operation: ${operation}. Use: get_task, get_phase_tasks, update_task_status, get_backlog, add_backlog_item, update_backlog_status, get_project, get_phase, create_task`);
+      fail(`Unknown operation: ${operation}. Use: get_task, get_phase_tasks, update_task_status, get_backlog, add_backlog_item, update_backlog_status, get_project, get_phase, create_project, create_phase, create_task`);
   }
 } finally {
   closeDb();
