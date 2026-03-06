@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anti-ADHD Kanban</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <h1>Anti-ADHD Kanban</h1>
+    <div class="controls">
+      <select id="project-select"><option value="">Loading...</option></select>
+      <select id="phase-select"><option value="">Select phase</option></select>
+      <div class="filters">
+        <select id="filter-priority">
+          <option value="">All priorities</option>
+          <option value="critical">Critical</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+        <select id="filter-area">
+          <option value="">All areas</option>
+        </select>
+      </div>
+      <label class="auto-refresh">
+        <input type="checkbox" id="auto-refresh" checked> Auto-refresh
+      </label>
+    </div>
+  </header>
+
+  <main id="board" class="board">
+    <div class="column" data-status="ready">
+      <div class="column-header"><span class="column-title">Ready</span><span class="count" id="count-ready">0</span></div>
+      <div class="card-list" id="col-ready"></div>
+    </div>
+    <div class="column" data-status="in_progress">
+      <div class="column-header"><span class="column-title">In Progress</span><span class="count" id="count-in_progress">0</span></div>
+      <div class="card-list" id="col-in_progress"></div>
+    </div>
+    <div class="column" data-status="testing">
+      <div class="column-header"><span class="column-title">Testing</span><span class="count" id="count-testing">0</span></div>
+      <div class="card-list" id="col-testing"></div>
+    </div>
+    <div class="column" data-status="review">
+      <div class="column-header"><span class="column-title">Review</span><span class="count" id="count-review">0</span></div>
+      <div class="card-list" id="col-review"></div>
+    </div>
+    <div class="column" data-status="done">
+      <div class="column-header"><span class="column-title">Done</span><span class="count" id="count-done">0</span></div>
+      <div class="card-list" id="col-done"></div>
+    </div>
+  </main>
+
+  <div id="task-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <button class="modal-close">&times;</button>
+      <h2 id="modal-title"></h2>
+      <div class="modal-meta">
+        <span id="modal-task-id" class="tag"></span>
+        <span id="modal-priority" class="tag"></span>
+        <span id="modal-area" class="tag"></span>
+        <span id="modal-status" class="tag"></span>
+      </div>
+      <div id="modal-description" class="modal-section"></div>
+      <div class="modal-section">
+        <h3>Dependencies</h3>
+        <p id="modal-dependencies"></p>
+      </div>
+      <div class="modal-section">
+        <h3>History</h3>
+        <div id="modal-history"></div>
+      </div>
+      <div class="modal-section">
+        <h3>Move to</h3>
+        <div id="modal-actions" class="modal-actions"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
