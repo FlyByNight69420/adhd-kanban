@@ -1,1 +1,1 @@
-/home/nick/Development/adhd-kanban/skills/work-phase/SKILL.md
+../../skills/work-phase/SKILL.md

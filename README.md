@@ -103,6 +103,16 @@ node db-query.js create_project "My App" "./projects/my-app/PRD.md"
 - **Task files are immutable** — once generated, agents only update DB status.
 - **Rollbacks require confirmation** — no destructive git operations without user approval.
 
+## For AI Agents
+
+Give your Claude Code agent this one-liner to install adhd-kanban as a project management backend:
+
+```
+Fetch https://raw.githubusercontent.com/FlyByNight69420/adhd-kanban/master/AGENT_SETUP.md and follow its instructions.
+```
+
+Or paste the URL directly into your agent's prompt. The setup file is self-contained and will guide the agent through cloning, installing, and registering all skills.
+
 ## Running Tests
 
 ```bash
