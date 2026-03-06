@@ -92,10 +92,9 @@ select:focus { outline: none; border-color: var(--accent); }
 /* Board */
 .board {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 12px;
   padding: 16px 24px;
-  min-height: calc(100vh - 70px);
   align-items: start;
 }
 
@@ -124,6 +123,7 @@ select:focus { outline: none; border-color: var(--accent); }
 [data-status="testing"] .column-header { border-bottom-color: var(--col-testing); }
 [data-status="review"] .column-header { border-bottom-color: var(--col-review); }
 [data-status="done"] .column-header { border-bottom-color: var(--col-done); }
+[data-status="backlog"] .column-header { border-bottom-color: var(--text-muted); }
 
 .count {
   background: var(--border);
@@ -153,6 +153,14 @@ select:focus { outline: none; border-color: var(--accent); }
 .card:hover {
   border-color: var(--accent-dim);
   transform: translateY(-1px);
+}
+
+.card-id {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+  margin-bottom: 4px;
 }
 
 .card-title {
@@ -295,10 +303,6 @@ select:focus { outline: none; border-color: var(--accent); }
 
 .history-arrow { color: var(--accent); }
 
-/* Drag and drop */
-.card.dragging { opacity: 0.4; }
-.column.drag-over { background: var(--surface-hover); }
-
 /* Empty state */
 .empty-state {
   text-align: center;
@@ -307,8 +311,161 @@ select:focus { outline: none; border-color: var(--accent); }
   font-size: 13px;
 }
 
+/* Dependencies */
+.dep-ref {
+  cursor: help;
+}
+
+.dep-done {
+  color: var(--col-done);
+}
+
+.dep-blocked {
+  color: var(--pri-critical);
+}
+
+.dep-entry {
+  font-size: 13px;
+  padding: 2px 0;
+  color: var(--text);
+}
+
+.backlog-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.backlog-form input,
+.backlog-form textarea {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.backlog-form input { width: 100%; }
+.backlog-form textarea { width: 100%; resize: vertical; }
+
+.backlog-form input:focus,
+.backlog-form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.btn-add {
+  padding: 6px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-add:hover { background: var(--accent-dim); }
+
+.backlog-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.backlog-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.backlog-content { flex: 1; min-width: 0; }
+
+.backlog-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.btn-icon:hover { color: var(--text); background: var(--surface-hover); }
+.btn-delete:hover { color: var(--pri-critical); }
+
+.backlog-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.backlog-edit-form input,
+.backlog-edit-form textarea {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  width: 100%;
+}
+
+.backlog-edit-form input:focus,
+.backlog-edit-form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.backlog-edit-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-cancel {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-cancel:hover { background: var(--surface-hover); }
+
+.backlog-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.backlog-notes {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
 /* Responsive */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   .board { grid-template-columns: repeat(3, 1fr); }
 }
 

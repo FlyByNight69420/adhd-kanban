@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   $(".modal-backdrop").addEventListener("click", closeModal);
   $(".modal-close").addEventListener("click", closeModal);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
-  setupDragDrop();
+  $("#backlog-form").addEventListener("submit", onBacklogSubmit);
   toggleAutoRefresh();
 });
 
@@ -58,6 +58,7 @@ async function loadPhases(projectId) {
     currentPhaseId = active.phase_id;
     await loadBoard(currentPhaseId);
   }
+  loadBacklog(projectId);
 }
 
 async function loadBoard(phaseId) {
@@ -72,6 +73,20 @@ async function loadBoard(phaseId) {
   }
   updateAreaFilter();
   renderBoard();
+}
+
+// -- Task lookup for dependencies --
+function taskById(taskId) {
+  return allTasks.find((t) => t.task_id === taskId);
+}
+
+function resolveDep(dep) {
+  const match = dep.match(/TASK-(\d+)/i);
+  if (!match) return { label: dep, done: false };
+  const id = Number(match[1]);
+  const task = taskById(id);
+  if (!task) return { label: dep, done: false };
+  return { label: `${dep}: ${task.title}`, done: task.status === "done" };
 }
 
 // -- Rendering --
@@ -106,11 +121,21 @@ function renderBoard() {
 function renderCard(task) {
   const deps = parseDeps(task.dependencies);
   const depsHtml = deps.length
-    ? `<div class="card-deps">Depends: ${deps.join(", ")}</div>`
+    ? `<div class="card-deps">${deps.map((d) => {
+        const r = resolveDep(d);
+        const cls = r.done ? "dep-done" : "dep-blocked";
+        const icon = r.done ? "\u2705" : "\u26D4";
+        return `<span class="dep-ref ${cls}" title="${esc(r.label)}">${icon} ${d}</span>`;
+      }).join(" ")}</div>`
     : "";
 
+  const taskLabel = `TASK-${String(task.task_id).padStart(3, "0")}`;
+
   return `
-    <div class="card" data-task-id="${task.task_id}" draggable="true">
+    <div class="card" data-task-id="${task.task_id}">
+      <div class="card-header">
+        <span class="card-id">${taskLabel}</span>
+      </div>
       <div class="card-title">${esc(task.title)}</div>
       <div class="card-tags">
         <span class="tag tag-priority-${task.priority}">${task.priority}</span>
@@ -142,7 +167,7 @@ async function openModal(taskId) {
   $("#modal-task-id").className = "tag tag-id";
   $("#modal-priority").textContent = task.priority;
   $("#modal-priority").className = `tag tag-priority-${task.priority}`;
-  $("#modal-area").textContent = task.feature_area || "—";
+  $("#modal-area").textContent = task.feature_area || "\u2014";
   $("#modal-area").className = task.feature_area ? `tag tag-area-${task.feature_area}` : "tag tag-id";
   $("#modal-status").textContent = STATUS_LABELS[task.status];
   $("#modal-status").className = "tag tag-status";
@@ -150,8 +175,19 @@ async function openModal(taskId) {
     ? `<h3>Description</h3><p>${esc(task.description)}</p>`
     : "";
 
+  // Dependencies — resolved to show titles
   const deps = parseDeps(task.dependencies);
-  $("#modal-dependencies").textContent = deps.length ? deps.join(", ") : "None";
+  const depEl = $("#modal-dependencies");
+  if (deps.length) {
+    depEl.innerHTML = deps.map((d) => {
+      const r = resolveDep(d);
+      const cls = r.done ? "dep-done" : "dep-blocked";
+      const icon = r.done ? "\u2705" : "\u26D4";
+      return `<div class="dep-entry ${cls}">${icon} ${esc(r.label)}</div>`;
+    }).join("");
+  } else {
+    depEl.textContent = "None";
+  }
 
   // History
   try {
@@ -159,7 +195,7 @@ async function openModal(taskId) {
     $("#modal-history").innerHTML = history.length
       ? history.map((h) => `
           <div class="history-entry">
-            <span>${STATUS_LABELS[h.old_status] || "—"}</span>
+            <span>${STATUS_LABELS[h.old_status] || "\u2014"}</span>
             <span class="history-arrow">&rarr;</span>
             <span>${STATUS_LABELS[h.new_status]}</span>
             <span style="margin-left:auto">${formatDate(h.changed_at)}</span>
@@ -170,19 +206,6 @@ async function openModal(taskId) {
     $("#modal-history").innerHTML = "<p>Could not load history</p>";
   }
 
-  // Actions
-  const actions = STATUSES.filter((s) => s !== task.status);
-  $("#modal-actions").innerHTML = actions
-    .map((s) => `<button class="btn${s === task.status ? " active" : ""}" data-status="${s}">${STATUS_LABELS[s]}</button>`)
-    .join("");
-
-  $("#modal-actions").querySelectorAll(".btn").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      await moveTask(taskId, btn.dataset.status);
-      closeModal();
-    });
-  });
-
   $("#task-modal").classList.remove("hidden");
 }
 
@@ -190,55 +213,94 @@ function closeModal() {
   $("#task-modal").classList.add("hidden");
 }
 
-async function moveTask(taskId, newStatus) {
-  await fetch(`${API}/api/tasks/${taskId}/status`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status: newStatus }),
-  });
-  await loadBoard(currentPhaseId);
+// -- Backlog --
+async function loadBacklog(projectId) {
+  try {
+    const items = await api(`/api/projects/${projectId}/backlog`);
+    const list = $("#backlog-list");
+    $("#count-backlog").textContent = items.length;
+    if (items.length === 0) {
+      list.innerHTML = '<div class="empty-state">No backlog items</div>';
+    } else {
+      list.innerHTML = items.map((item) => `
+        <div class="backlog-item" data-backlog-id="${item.backlog_id}">
+          <div class="backlog-content">
+            <div class="backlog-title">${esc(item.title)}</div>
+            ${item.notes ? `<div class="backlog-notes">${esc(item.notes)}</div>` : ""}
+          </div>
+          <div class="backlog-actions">
+            <button class="btn-icon btn-edit" title="Edit">&#9998;</button>
+            <button class="btn-icon btn-delete" title="Delete">&times;</button>
+          </div>
+        </div>
+      `).join("");
+
+      list.querySelectorAll(".btn-edit").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const item = btn.closest(".backlog-item");
+          editBacklogItem(Number(item.dataset.backlogId), items.find((i) => i.backlog_id === Number(item.dataset.backlogId)));
+        });
+      });
+
+      list.querySelectorAll(".btn-delete").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          const item = btn.closest(".backlog-item");
+          await fetch(`${API}/api/backlog/${item.dataset.backlogId}`, { method: "DELETE" });
+          await loadBacklog(currentProjectId);
+        });
+      });
+    }
+  } catch {
+    $("#backlog-list").innerHTML = '<div class="empty-state">Could not load backlog</div>';
+  }
 }
 
-// -- Drag & Drop --
-function setupDragDrop() {
-  const board = $("#board");
-
-  board.addEventListener("dragstart", (e) => {
-    const card = e.target.closest(".card");
-    if (!card) return;
-    card.classList.add("dragging");
-    e.dataTransfer.setData("text/plain", card.dataset.taskId);
-    e.dataTransfer.effectAllowed = "move";
-  });
-
-  board.addEventListener("dragend", (e) => {
-    const card = e.target.closest(".card");
-    if (card) card.classList.remove("dragging");
-    $$(".column").forEach((c) => c.classList.remove("drag-over"));
-  });
-
-  board.addEventListener("dragover", (e) => {
+function editBacklogItem(backlogId, item) {
+  const container = document.querySelector(`.backlog-item[data-backlog-id="${backlogId}"]`);
+  if (!container) return;
+  container.innerHTML = `
+    <form class="backlog-edit-form">
+      <input type="text" class="edit-title" value="${esc(item.title)}" required>
+      <textarea class="edit-notes" rows="2">${esc(item.notes || "")}</textarea>
+      <div class="backlog-edit-actions">
+        <button type="submit" class="btn btn-add">Save</button>
+        <button type="button" class="btn btn-cancel">Cancel</button>
+      </div>
+    </form>
+  `;
+  container.querySelector(".backlog-edit-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const col = e.target.closest(".column");
-    if (col) col.classList.add("drag-over");
+    const title = container.querySelector(".edit-title").value.trim();
+    if (!title) return;
+    await fetch(`${API}/api/backlog/${backlogId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, notes: container.querySelector(".edit-notes").value.trim() || null }),
+    });
+    await loadBacklog(currentProjectId);
+  });
+  container.querySelector(".btn-cancel").addEventListener("click", () => loadBacklog(currentProjectId));
+  container.querySelector(".edit-title").focus();
+}
+
+async function onBacklogSubmit(e) {
+  e.preventDefault();
+  const titleInput = $("#backlog-title");
+  const notesInput = $("#backlog-notes");
+  const title = titleInput.value.trim();
+  if (!title || !currentProjectId) return;
+
+  await fetch(`${API}/api/projects/${currentProjectId}/backlog`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title, notes: notesInput.value.trim() || null }),
   });
 
-  board.addEventListener("dragleave", (e) => {
-    const col = e.target.closest(".column");
-    if (col) col.classList.remove("drag-over");
-  });
-
-  board.addEventListener("drop", async (e) => {
-    e.preventDefault();
-    const col = e.target.closest(".column");
-    if (!col) return;
-    col.classList.remove("drag-over");
-    const taskId = Number(e.dataTransfer.getData("text/plain"));
-    const newStatus = col.dataset.status;
-    if (taskId && newStatus) {
-      await moveTask(taskId, newStatus);
-    }
-  });
+  titleInput.value = "";
+  notesInput.value = "";
+  await loadBacklog(currentProjectId);
 }
 
 // -- Events --

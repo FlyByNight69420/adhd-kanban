@@ -31,6 +31,17 @@
   </header>
 
   <main id="board" class="board">
+    <div class="column column-backlog" data-status="backlog">
+      <div class="column-header"><span class="column-title">Backlog</span><span class="count" id="count-backlog">0</span></div>
+      <div class="card-list">
+        <form id="backlog-form" class="backlog-form">
+          <input type="text" id="backlog-title" placeholder="New item..." required>
+          <textarea id="backlog-notes" placeholder="Notes (optional)" rows="2"></textarea>
+          <button type="submit" class="btn btn-add">Add</button>
+        </form>
+        <div id="backlog-list"></div>
+      </div>
+    </div>
     <div class="column" data-status="ready">
       <div class="column-header"><span class="column-title">Ready</span><span class="count" id="count-ready">0</span></div>
       <div class="card-list" id="col-ready"></div>
@@ -72,10 +83,6 @@
       <div class="modal-section">
         <h3>History</h3>
         <div id="modal-history"></div>
-      </div>
-      <div class="modal-section">
-        <h3>Move to</h3>
-        <div id="modal-actions" class="modal-actions"></div>
       </div>
     </div>
   </div>

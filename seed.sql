@@ -24,7 +24,7 @@ VALUES
 
     (1, 1, 'REST API - project and phase endpoints',
      'CRUD endpoints for projects and phases',
-     'in_progress', 'backend', 'high', '["TASK-001"]',
+     'ready', 'backend', 'high', '["TASK-001"]',
      './projects/anti-adhd-kanban/tasks/mvp/TASK-002-api-projects-phases.md'),
 
     (1, 1, 'REST API - task endpoints',

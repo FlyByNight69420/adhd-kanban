@@ -119,6 +119,12 @@ export function updateTaskStatus(taskId, status, commitHash = null) {
   commitHash ? stmt.run(status, commitHash, taskId) : stmt.run(status, taskId);
 }
 
+export function resetInProgressTasks() {
+  getDb()
+    .prepare("UPDATE tasks SET status = 'ready' WHERE status = 'in_progress'")
+    .run();
+}
+
 export function createTask({ projectId, phaseId, title, description, featureArea, priority, dependencies, taskFilePath }) {
   const result = getDb()
     .prepare(
@@ -157,10 +163,39 @@ export function createBacklogItem({ projectId, title, notes }) {
   return result.lastInsertRowid;
 }
 
+export function getBacklogItem(backlogId) {
+  return getDb().prepare("SELECT * FROM backlog WHERE backlog_id = ?").get(backlogId);
+}
+
+export function updateBacklogItem(backlogId, { title, notes }) {
+  getDb()
+    .prepare("UPDATE backlog SET title = ?, notes = ? WHERE backlog_id = ?")
+    .run(title, notes ?? null, backlogId);
+}
+
+export function deleteBacklogItem(backlogId) {
+  getDb().prepare("DELETE FROM backlog WHERE backlog_id = ?").run(backlogId);
+}
+
 export function updateBacklogStatus(backlogId, status) {
   getDb()
     .prepare("UPDATE backlog SET status = ? WHERE backlog_id = ?")
     .run(status, backlogId);
+}
+
+// -- Unblocked Tasks --
+
+export function getUnblockedTasks(phaseId) {
+  const tasks = getTasksByPhase(phaseId);
+  const doneIds = new Set(
+    tasks.filter((t) => t.status === "done").map((t) => `TASK-${String(t.task_id).padStart(3, "0")}`)
+  );
+  return tasks.filter((t) => {
+    if (t.status !== "ready") return false;
+    if (!t.dependencies) return true;
+    const deps = JSON.parse(t.dependencies);
+    return deps.every((d) => doneIds.has(d));
+  });
 }
 
 // -- Board View (full board for a phase) --
